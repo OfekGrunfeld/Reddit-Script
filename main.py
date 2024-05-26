@@ -21,8 +21,10 @@ def test_subreddits():
     reddit = create_reddit_api_object(config)
     
     subreddits_object = Subreddits(reddit)
-    subreddits_object.fetch_user_subreddits()
-    subreddits_object.output_to_txt()
+    subreddits_object.fetch_subscribed()
+    subreddits_object.output_subscribed_to_txt()
+
+    # print(f"Subscribed successfully to: {subreddits_object.subsribe_from_list(["music", "aviation", "formula1"])}")
 
 def main():
     test_subreddits()

@@ -1,6 +1,7 @@
 ### Reddit Script
 ## Features
 - Output subscribed subreddit list to txt/csv files
+- Subscribe to subreddits from a list
 
 ## Prerequisites
 To get this script running, you will to create the config for interacting with the Reddit API, and for that you will need to create a [Reddit App](https://business.reddithelp.com/helpcenter/s/article/Create-a-Reddit-Application). 
