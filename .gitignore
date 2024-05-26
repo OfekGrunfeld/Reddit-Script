@@ -21,3 +21,6 @@ Thumbs.db
 
 # Ignore default output directory
 output/
+
+# Ignore test files
+test.py

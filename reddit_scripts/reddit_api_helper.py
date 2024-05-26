@@ -4,12 +4,13 @@ import csv
 
 from praw import Reddit
 from prawcore.exceptions import ResponseException
-from logger import logger
 
-class Subreddits:
+from utils.logger import logger
+
+class RedditAPIHelper:
     def __init__(self, reddit: Reddit, username: str):
         """
-        Initialize the Subreddits class.
+        Initialize the RedditAPIHelper class.
 
         Args:
             reddit (Reddit): Authenticated Reddit API object.
@@ -17,7 +18,7 @@ class Subreddits:
         """
         self.reddit = reddit
         self.username = username
-        self.default_save_name = os.path.join("output", "subreddits", "subreddits")
+        self.default_save_name = os.path.join("output", "subreddits")
         self.subreddits_list = []
 
     def fetch_subscribed(self, return_subreddits: bool = False) -> Union[list[str], None]:
@@ -41,7 +42,8 @@ class Subreddits:
         except Exception as error:
             logger.error(f"Error getting subreddits list for user {self.username}: {error}")
 
-    def ensure_directory_exists(self, file_path: str) -> None:
+    @staticmethod
+    def ensure_directory_exists(file_path: str) -> None:
         """
         Ensure the directory for the given file path exists.
 
@@ -66,7 +68,7 @@ class Subreddits:
             logger.debug("No subreddits to output.")
             return False
 
-        default_file_name = f"{self.default_save_name}.txt"
+        default_file_name = os.path.join(self.default_save_name, "subreddits.txt")
 
         if file_path is None:
             file_path = default_file_name
@@ -75,7 +77,7 @@ class Subreddits:
             logger.debug(f"File path must be a string. Defaulting to {default_file_name}")
             file_path = default_file_name
 
-        self.ensure_directory_exists(file_path)
+        RedditAPIHelper.ensure_directory_exists(file_path)
 
         try:
             with open(file_path, "w") as file:
@@ -98,12 +100,15 @@ class Subreddits:
 
         Returns:
             bool: True if successful, False otherwise.
+
+        Notes:
+            The function is implemented in order to provide support for categorisation of subreddits.
         """
         if not self.subreddits_list:
             logger.debug("No subreddits to output.")
             return False
 
-        default_file_name = f"{self.default_save_name}.csv"
+        default_file_name = os.path.join(self.default_save_name, "subreddits.csv")
 
         if file_path is None:
             file_path = default_file_name
@@ -112,7 +117,7 @@ class Subreddits:
             logger.debug(f"File path must be a string. Defaulting to {default_file_name}")
             file_path = default_file_name
 
-        self.ensure_directory_exists(file_path)
+        RedditAPIHelper.ensure_directory_exists(file_path)
 
         try:
             with open(file_path, mode='w', newline='') as file:
@@ -148,6 +153,35 @@ class Subreddits:
                 logger.error(f"Couldn't subscribe to subreddit {subreddit}. Error: {error}")
 
         return subscribed_count
+
+    def subscribe_from_txt(self, file_path: str = None) -> int:
+        """
+        Subscribe to subreddits listed in a text file.
+
+        Returns:
+            int: Number of successful subscriptions.
+        """
+        default_save_path = os.path.join(self.default_save_name, "subreddits.txt")
+
+        if file_path is None or not isinstance(file_path, str):
+            file_path = default_save_path
+        
+        if not isinstance(file_path, str):
+            logger.debug(f"File path must be a string. Defaulting to {default_save_path}")
+            file_path = default_save_path
+
+        try:
+            with open(file_path, "r") as file:
+                subreddits = file.read().splitlines()
+            logger.debug(f"Read {len(subreddits)} subreddits from {file_path}")
+            return self.subscribe_from_list(subreddits)
+        except FileNotFoundError as error:
+            logger.error(f"File not found: {file_path}")
+            return 0
+        except Exception as error:
+            logger.error(f"Error reading from file {file_path}: {error}")
+            return 0
+
 
     def fetch_user_moderated_subreddits(self, username: str = None) -> List[str]:
         """
